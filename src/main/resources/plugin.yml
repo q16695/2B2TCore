@@ -1,0 +1,53 @@
+name: 2b2tCore
+version: '${project.version}'
+main: me.miku.main.A2b2tCore
+depend:
+  - AuthMe
+  - PlaceholderAPI
+commands:
+  pl:
+    description: show plugins
+  plugins:
+    description: show plugins
+  help:
+    description: help
+  '?':
+    description: help
+  2b2tcore:
+    description: main command
+  fz:
+    description: dupe your hand's items
+    permission: 2b2tcore.fz
+  stat:
+    description: stat player's information
+  m:
+    description: whisper
+  tell:
+    description: whisper
+  msg:
+    description: whisper
+  s:
+    description: whisper
+  whisper:
+    description: whisper
+  w:
+    description: whisper
+  514:
+    description: kill self
+  kill:
+    description: kill self
+  ks:
+    description: kick self
+  r:
+    description: fast reply
+  join:
+    description: join
+  stats:
+    description: stat the server
+permissions:
+  2b2tcore.admin:
+    description: admin
+  2b2tcore.shulkderdupe:
+    description: shulkderdupe use of permission
+  2b2tcore.skipQueue:
+    description: skipQueue Permissions

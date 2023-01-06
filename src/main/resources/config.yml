@@ -1,0 +1,141 @@
+# You can use these variables:
+# %ShulkderDupe%   %AChunkMaxPiston%   %AChunkMaxRedStone%   %fzDupeMaxTime%  %colorPreFix%
+# %Year%  %Month%  %Day%  %Hour%  %Minute%  %Second%
+# it's not PlaceHolderAPI's, only can use the config
+# and you can use the color symbol everywhere in the config
+colorPreFix: "&"
+pluginMessage: "Plugins (6): &aHere, is, no, thing, to, see"
+successfulReload: "&eSuccessful Reload!"
+ErrorReload: "&4There is a problem that it can't success to reload"
+noPermission: "&cI'm sorry, but you haven't the permission of this command."
+ErrorConsoleMessage: "&4Error, you must as a player in game to use the command"
+fzSuccessFulMessage: "&eSuccessful!"
+fzErrorMessage: "&4OutNumber!"
+outPistonMessage: "&4Error, every chunk can place %AChunkMaxPiston% piston"
+outRedStoneMessage: "&4Error, every chunk can place %AChunkMaxRedStone% redstones"
+cantPlaceBlockMessage: "&cSorry, here can't place block"
+Helps:
+  - "==========[Help List]========="
+  - "/help, Show this Help"
+  - "=============================="
+ShulkderDupe: 20
+fzDupeTime: 5
+fzDupeMaxTime: 10
+AChunkMaxPiston: 16
+AChunkMaxRedStone: 16
+enableQuitJoinMessage: false
+enablemotd: true
+disablePing: false
+maxPlayer: 314159265358979323846
+onlinePlayer: 27182818284590452354
+hidePlayer: false
+protocolVersion: 340
+version: "2B2TCore"
+icons:
+  - "icon.png"
+randomIcon: false
+ksKickMessage: "&6You have lost the connection."
+whisperUsageMessage: "&cUsage, /%COMMAND_NAME% <Player> <Message>"
+whisperMessage: "&dYou &dwhisper %player%: %MESSAGE%"
+whisperReceiveMessage: "&d%player% &dwhisper you: %MESSAGE%"
+whisperPlayerNotOnline: "&c%player% is not online!"
+whisperCannotSendme: "&cCan't whisper yourself"
+stat:
+  - "&b&n-------------------------"
+  - "&3Name: &f%player_name%"
+  - "&3JoinTimes: &f%statistic_leave_game%"
+  - "&3DeathTimes: &f%statistic_deaths%"
+  - "&3Kills: &f%statistic_player_kills%"
+  - "&3TimePlayed: &6%statistic_time_played%"
+  - "&b&n-------------------------"
+statsPlayer:
+  - "&b&n---------------------------"
+  - "&4LoginPlayers: &e%offline%"
+  - "&4WorldSize: &e%WorldSize_player%GB"
+  - "&b&n---------------------------"
+statsConsole:
+  - "&b&n---------------------------"
+  - "&4LoginPlayers: &e%offline%"
+  - "&4WorldSize: &e%WorldSize_console%GB"
+  - "&b&n---------------------------"
+statPlayerNotFoundMessage: "&c%player% not found."
+chatColdDownMessage: "&cColdDown..."
+nothingToReply: "&cNo player send you message last time."
+#  in seconds
+coldDown: 3
+EnableQueue: false
+QueueMap: "Login"
+MaxQueuePlayer: 200
+#  in seconds
+minQueueSeconds: 20
+maxQueueSeconds: 60
+TeleLogin: false
+PositionInQueue: "&6Position in queue: %Position%"
+JoinErrorMessage: "&cSorry, you need in %QueueMap% world"
+# once max damage
+maxDamage: 40
+Anti32k: true
+tabReturnMessage:
+  - "/help"
+  - "/pl"
+  - "/kill"
+  - "/tell"
+  - "/514"
+  - "/w"
+  - "/whisper"
+  - "/s"
+  - "/msg"
+  - "/fz"
+  - "/?"
+motds:
+  - "Hello 2023!"
+  - "Fast join us, %PLAYER%"
+  - "ProtocolVersion: %PROTOCOLVERSION%"
+  - "&7&o&l2B &6there is no way in this world \n&7&o&l2T &6when more people walk, it becomes a road."
+  - "&7&o&l2B &6本是同根生，相煎何太急。\n&7&o&l2T"
+  - "&7&o&l2B &6越是无能的人，\n&7&o&l2T &6越喜欢挑剔别人的错。"
+  - "&7&o&l2B &6老鼠偷走大米,人说老鼠狡猾。\n&7&o&l2T &6人偷走蜂蜜,却说蜜蜂勤劳。"
+  - "&7&o&l2B &6君子之交淡如水 小人之交甘若醴。\n&7&o&l2T"
+  - "&7&o&l2B &6还记得天使与恶魔的赌约么？\n&7&o&l2T &6进去你就是到谁赢了！"
+  - "&7&o&l2B &6大多数人想要改造这个世界，\n&7&o&l2T &6却罕有人想改造自己。"
+  - "&7&o&l2B &6@goto 2023 1225\n&7&o&l2T"
+  - "&7&o&l2B &6一千个读者就有一千个哈姆雷特\n&7&o&l2T"
+  - "&7&o&l2B &6天使与恶魔\n&7&o&l2T &6对人性打起了赌"
+  - "&7&o&l2B &6人生没有彩排，\n&7&o&l2T &6每一个细节都是现场直播。"
+  - "&7&o&l2B &6多行不义必自毙。\n&7&o&l2T "
+  - "&7&o&l2B &6千里之行，始于足下。\n&7&o&l2T"
+  - "&7&o&l2B &6村口的狗叫了，\n&7&o&l2T &6所有的狗都叫了,但是它们不知道为什么！"
+  - "&7&o&l2B &6酒肉穿肠过，佛祖心中留。\n&7&o&l2T &6世人若学我，如同入魔道。"
+  - "&7&o&l2B &6己所不欲，勿施于人！\n&7&o&l2T"
+  - "&7&o&l2B &6蛇不知,己有毒。\n&7&o&l2T &6人不知,己有错！"
+  - "&7&o&l2B &6heaven moves well, and a gentleman\n&7&o&l2T &6should constantly strive for self-improvement"
+  - "&7&o&l2B &6天生我材必有用，千金散尽还复来\n&7&o&l2T"
+  - "&7&o&l2B &6the game is over. Players wake up from their dreams\n&7&o&l2T &6players start a new dream- The poem of the end"
+  - "&7&o&l2B &6success is often next door to failure\n&7&o&l2T"
+  - "&7&o&l2B &6They put me in a round room and\n&7&o&l2T &6 told me to piss in a corner"
+  - "&7&o&l2B &6>Rules\n&7&o&l2T"
+  - "&7&o&l2B &6who's mining obsidian and vines\n&7&o&l2T"
+  - "&7&o&l2B &6THAT'S THE POWER OF THE KEYBLADE!\n&7&o&l2T "
+  - "&7&o&l2B &6Welcome, Amy\n&7&o&l2T "
+  - "&7&o&l2B &6ok\n&7&o&l2T "
+  - "&7&o&l2B &61.15 when\n&7&o&l2T "
+  - "&7&o&l2B &6moutains get big beacuse\n&7&o&l2T &6they have no natural predators"
+  - "&7&o&l2B &6Fuck\n&7&o&l2T "
+  - "&7&o&l2B &4It will all be over soon.\n&7&o&l2T "
+  - "&7&o&l2B &6Something new disabled weekly!\n&7&o&l2T "
+  - "&7&o&l2B &6My stepdads play here\n&7&o&l2T "
+  - "&7&o&l2B &6sponsored by church taxes\n&7&o&l2T "
+  - "&7&o&l2B &6I like my grandma's cookies\n&7&o&l2T "
+  - "&7&o&l2B &6The end is inevitable.\n&7&o&l2T "
+  - "&7&o&l2B &6Get out of my chair!\n&7&o&l2T "
+  - "&4无法连接到服务器"
+  - "&4无法解析主机名"
+  - "&4Can't resolve hostname"
+  - "&4Can't connect to server"
+  - "&7&o&l2B &6what the 2B2T??????????????\n&7&o&l2T "
+  - "&7&o&l2B &6Dupe your cactus with the cactus dupe!\n&7&o&l2T "
+  - "&7&o&l2B &6Youtubers loved and welcome\n&7&o&l2T "
+  - "&7&o&l2B &6as seen on TV!\n&7&o&l2T "
+  - "&7&o&l2B &6sample text\n&7&o&l2T "
+  - "&7&o&l2B &6Pretend it's 2016 every day!\n&7&o&l2T "
+  - "&7&o&l2B Happy new year!\n&7&o&l2T "
