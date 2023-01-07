@@ -191,7 +191,7 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
             }
         } else if(command.getName().equals("ks")) {
             if(sender instanceof Player) {
-                ((Player) sender).kickPlayer(StringUtils.format(ksKickMessage));
+                ((Player) sender).kickPlayer(StringUtils.translatePlaceholderAPI(StringUtils.format(ksKickMessage), (Player) sender));
             } else {
                 sender.sendMessage(ErrorConsoleMessage);
             }
@@ -507,24 +507,22 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
 
     @EventHandler
     public void queue2(PlayerChangedWorldEvent event) {
-        if(EnableQueue && TeleLogin) {
-            if (event.getFrom().getName().equals(QueueMap)) {
-                queue.remove(event.getPlayer().getName());
-                for(Player v : this.getServer().getOnlinePlayers()) {
-                    if(!event.getPlayer().getName().equals(v.getName())) {
-                        event.getPlayer().showPlayer(v);
-                    }
+        if (event.getFrom().getName().equals(QueueMap)) {
+            queue.remove(event.getPlayer().getName());
+            for(Player v : this.getServer().getOnlinePlayers()) {
+                if(!event.getPlayer().getName().equals(v.getName())) {
+                    event.getPlayer().showPlayer(v);
                 }
-                for(Map.Entry<String, PlayerQueue> entry : queue.entrySet()) {
-                    entry.getValue().position--;
-                }
+            }
+            for(Map.Entry<String, PlayerQueue> entry : queue.entrySet()) {
+                entry.getValue().position--;
             }
         }
     }
 
     @EventHandler
     public void queue3(PlayerMoveEvent event) {
-        if(EnableQueue && TeleLogin && event.getFrom().getWorld().getName().equals(event.getTo().getWorld().getName())) {
+        if(event.getFrom().getWorld().getName().equals(event.getTo().getWorld().getName())) {
             if(event.getPlayer().getWorld().getName().equals(QueueMap)) {
                 event.setCancelled(true);
             }
@@ -533,7 +531,7 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
 
     @EventHandler
     public void queue4(EntityDamageByBlockEvent event) {
-        if(EnableQueue && event.getEntity() instanceof Player) {
+        if(event.getEntity() instanceof Player) {
             if(event.getEntity().getWorld().getName().equals(QueueMap)) {
                 event.setCancelled(true);
             }
@@ -542,7 +540,7 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
 
     @EventHandler
     public void queue5(EntityDamageByEntityEvent event) {
-        if(EnableQueue && event.getEntity() instanceof Player) {
+        if(event.getEntity() instanceof Player) {
             if(event.getEntity().getWorld().getName().equals(QueueMap)) {
                 event.setCancelled(true);
             }
@@ -551,23 +549,21 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
 
     @EventHandler
     public void queue6(PlayerQuitEvent event) {
-        if(EnableQueue && TeleLogin) {
-            if(event.getPlayer().getWorld().getName().equals(QueueMap)) {
-                Location location = event.getPlayer().getLocation();
-                if(queue.get(event.getPlayer().getName()) != null) {
-                    if (this.getServer().getWorld(queue.get(event.getPlayer().getName()).normalWorld.getName()) == null || queue.get(event.getPlayer().getName()).normalWorld.getName().equals(QueueMap)) {
-                        location.setWorld(this.getServer().getWorlds().get(0));
-                    } else {
-                        location.setWorld(this.getServer().getWorld(queue.get(event.getPlayer().getName()).normalWorld.getName()));
-                    }
-                } else {
+        if(event.getPlayer().getWorld().getName().equals(QueueMap)) {
+            Location location = event.getPlayer().getLocation();
+            if(queue.get(event.getPlayer().getName()) != null) {
+                if (this.getServer().getWorld(queue.get(event.getPlayer().getName()).normalWorld.getName()) == null || queue.get(event.getPlayer().getName()).normalWorld.getName().equals(QueueMap)) {
                     location.setWorld(this.getServer().getWorlds().get(0));
+                } else {
+                    location.setWorld(this.getServer().getWorld(queue.get(event.getPlayer().getName()).normalWorld.getName()));
                 }
-                event.getPlayer().teleport(location);
-                queue.remove(event.getPlayer().getName());
-                for(Map.Entry<String, PlayerQueue> entry : queue.entrySet()) {
-                    entry.getValue().position--;
-                }
+            } else {
+                location.setWorld(this.getServer().getWorlds().get(0));
+            }
+            event.getPlayer().teleport(location);
+            queue.remove(event.getPlayer().getName());
+            for(Map.Entry<String, PlayerQueue> entry : queue.entrySet()) {
+                entry.getValue().position--;
             }
         }
     }
