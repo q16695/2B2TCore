@@ -90,7 +90,7 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
                 world.setGameRuleValue("commandBlockOutput", "false");
             }
         }
-        if(this.getServer().getPluginManager().getPlugin("Authme") == null) {
+        if(this.getServer().getPluginManager().getPlugin("Authme") != null) {
             this.getServer().getPluginManager().registerEvents(new AuthmeListener(), this);
         } else {
             hasAuthme = true;
