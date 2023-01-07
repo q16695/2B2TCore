@@ -2,8 +2,9 @@ name: 2b2tCore
 version: '${project.version}'
 main: me.miku.main.A2b2tCore
 depend:
-  - AuthMe
   - PlaceholderAPI
+softdepend:
+  - AuthMe
 commands:
   pl:
     description: show plugins

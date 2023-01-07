@@ -2,7 +2,6 @@ package me.miku.main;
 
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
 import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
-import fr.xephi.authme.api.v3.AuthMeApi;
 import me.miku.main.papi.WorldSize;
 import org.bukkit.*;
 import org.bukkit.command.Command;
@@ -48,7 +47,7 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
     public static int AChunkMaxRedStone;
     public static int AChunkMaxPiston, coldDown;
     public static String outPistonMessage, nothingToReply, statPlayerNotFoundMessage;
-    public static boolean enableQuitJoinMessage;
+    public static boolean enableQuitJoinMessage, hasAuthme = false;
     public static boolean enablemotd;
     public static boolean disablePing;
     public static List<String> motds;
@@ -90,6 +89,11 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
             if(world.getGameRuleValue("commandBlockOutput").equals("true")) {
                 world.setGameRuleValue("commandBlockOutput", "false");
             }
+        }
+        if(this.getServer().getPluginManager().getPlugin("Authme") == null) {
+            this.getServer().getPluginManager().registerEvents(new AuthmeListener(), this);
+        } else {
+            hasAuthme = true;
         }
     }
 
@@ -453,52 +457,50 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
 
     @EventHandler
     public void queue1(PlayerJoinEvent event) {
-        if(EnableQueue) {
-            queue.put(event.getPlayer().getName(), new PlayerQueue(event.getPlayer(), new Random().nextInt(maxQueueSeconds - minQueueSeconds + 1) + minQueueSeconds, queue.size(), event.getPlayer().getWorld()));
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    if(getServer().getPlayer(event.getPlayer().getName()) == null || !event.getPlayer().getWorld().getName().equals(QueueMap)) {
-                        cancel();
-                        return;
-                    }
-                    if(getServer().getPlayer(event.getPlayer().getName()) != null || event.getPlayer().getWorld().getName().equals(QueueMap)) {
-                        if (queue.containsKey(event.getPlayer().getName())) {
-                            if (EnableQueue && !event.getPlayer().hasPermission("2b2tcore.skipQueue")) {
-                                for (Player v : getServer().getOnlinePlayers()) {
-                                    if (!event.getPlayer().getName().equals(v.getName())) {
-                                        event.getPlayer().hidePlayer(v);
+        if(!hasAuthme) {
+            if (EnableQueue) {
+                queue.put(event.getPlayer().getName(), new PlayerQueue(event.getPlayer(), new Random().nextInt(maxQueueSeconds - minQueueSeconds + 1) + minQueueSeconds, queue.size(), event.getPlayer().getWorld()));
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        if (getServer().getPlayer(event.getPlayer().getName()) == null || !event.getPlayer().getWorld().getName().equals(QueueMap)) {
+                            cancel();
+                            return;
+                        }
+                        if (getServer().getPlayer(event.getPlayer().getName()) != null || event.getPlayer().getWorld().getName().equals(QueueMap)) {
+                            if (queue.containsKey(event.getPlayer().getName())) {
+                                if (EnableQueue && !event.getPlayer().hasPermission("2b2tcore.skipQueue")) {
+                                    for (Player v : getServer().getOnlinePlayers()) {
+                                        if (!event.getPlayer().getName().equals(v.getName())) {
+                                            event.getPlayer().hidePlayer(v);
+                                        }
                                     }
+                                    if (!queue.containsKey(event.getPlayer().getName())) {
+                                        queue.put(event.getPlayer().getName(), new PlayerQueue(event.getPlayer(), new Random().nextInt(maxQueueSeconds - minQueueSeconds + 1) + minQueueSeconds, queue.size(), event.getPlayer().getWorld()));
+                                    } else {
+                                        queue.get(event.getPlayer().getName()).joinServerTick++;
+                                    }
+                                    String positionMessage = PositionInQueue;
+                                    if (positionMessage.contains("%Position%")) {
+                                        positionMessage = positionMessage.replaceAll("%Position%", String.valueOf(Math.abs(queue.get(event.getPlayer().getName()).position)));
+                                    }
+                                    positionMessage = StringUtils.format(positionMessage);
+                                    event.getPlayer().sendTitle(positionMessage, "", 0, 5, 15);
                                 }
-                                if (!queue.containsKey(event.getPlayer().getName())) {
-                                    queue.put(event.getPlayer().getName(), new PlayerQueue(event.getPlayer(), new Random().nextInt(maxQueueSeconds - minQueueSeconds + 1) + minQueueSeconds, queue.size(), event.getPlayer().getWorld()));
-                                } else {
-                                    queue.get(event.getPlayer().getName()).joinServerTick++;
-                                }
-                                String positionMessage = PositionInQueue;
-                                if (positionMessage.contains("%Position%")) {
-                                    positionMessage = positionMessage.replaceAll("%Position%", String.valueOf(Math.abs(queue.get(event.getPlayer().getName()).position)));
-                                }
-                                positionMessage = StringUtils.format(positionMessage);
-                                event.getPlayer().sendTitle(positionMessage, "", 0, 5, 15);
-                            }
-                            if (queue.get(event.getPlayer().getName()).joinServerTick >= queue.get(event.getPlayer().getName()).queueTime * 20 && queue.get(event.getPlayer().getName()).position <= 0) {
-                                if (AuthMeApi.getInstance().isAuthenticated(event.getPlayer()) && getServer().getPlayer(event.getPlayer().getName()).getWorld().getName().equals(QueueMap)) {
+                                if (queue.get(event.getPlayer().getName()).joinServerTick >= queue.get(event.getPlayer().getName()).queueTime * 20 && queue.get(event.getPlayer().getName()).position <= 0) {
                                     getServer().getPlayer(event.getPlayer().getName()).performCommand("2b2tCore:join");
                                 }
-                            }
-                        } else {
-                            if (AuthMeApi.getInstance().isAuthenticated(event.getPlayer()) && getServer().getPlayer(event.getPlayer().getName()).getWorld().getName().equals(QueueMap)) {
+                            } else {
                                 getServer().getPlayer(event.getPlayer().getName()).performCommand("2b2tCore:join");
                             }
                         }
                     }
+                }.runTaskTimerAsynchronously(this, 1L, 1L);
+                if (this.getServer().getWorlds().stream().filter(v -> !v.getName().equals(QueueMap)).collect(Collectors.toList()).size() > 0) {
+                    Location location = event.getPlayer().getLocation();
+                    location.setWorld(this.getServer().getWorld(QueueMap));
+                    event.getPlayer().teleport(location);
                 }
-            }.runTaskTimerAsynchronously(this, 1L, 1L);
-            if (this.getServer().getWorlds().stream().filter(v -> !v.getName().equals(QueueMap)).collect(Collectors.toList()).size() > 0) {
-                Location location = event.getPlayer().getLocation();
-                location.setWorld(this.getServer().getWorld(QueueMap));
-                event.getPlayer().teleport(location);
             }
         }
     }
