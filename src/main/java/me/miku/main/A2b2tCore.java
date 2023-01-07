@@ -213,13 +213,17 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
         } else if(command.getName().equals("join")) {
             if(sender instanceof Player) {
                 if(((Player) sender).getWorld().getName().equals(QueueMap)) {
-                    Location location = ((Player) sender).getLocation();
-                    if(this.getServer().getWorld(queue.get(sender.getName()).normalWorld.getName()) != null) {
-                        location.setWorld(this.getServer().getWorld(queue.get(sender.getName()).normalWorld.getName()));
+                    if(canJoin(sender.getName())) {
+                        Location location = ((Player) sender).getLocation();
+                        if (this.getServer().getWorld(queue.get(sender.getName()).normalWorld.getName()) != null) {
+                            location.setWorld(this.getServer().getWorld(queue.get(sender.getName()).normalWorld.getName()));
+                        } else {
+                            location.setWorld(this.getServer().getWorlds().get(0));
+                        }
+                        ((Player) sender).teleport(location);
                     } else {
-                        location.setWorld(this.getServer().getWorlds().get(0));
+                        sender.sendMessage(StringUtils.format(StringUtils.translatePlaceholderAPI(noPermission, ((Player) sender))));
                     }
-                    ((Player) sender).teleport(location);
                 } else {
                     String message = JoinErrorMessage;
                     if(message.contains("%QueueMap%")) {
@@ -683,5 +687,20 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
         statsConsole = yamlConfig.getStringList("statsConsole");
         shulkerdupes.clear();
         chatColdDown.clear();
+    }
+
+    private boolean canJoin(Player player) {
+        return canJoin(player.getName());
+    }
+
+    private boolean canJoin(String player) {
+        for(Map.Entry<String, PlayerQueue> v : queue.entrySet()) {
+            if(v.getKey().equals(player)) {
+                if(v.getValue().joinServerTick >= v.getValue().queueTime * 20) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
