@@ -2,12 +2,16 @@ package me.miku.main;
 
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
 import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
+import me.miku.main.papi.NewOrNotChunk;
 import me.miku.main.papi.WorldSize;
 import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Chicken;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -15,9 +19,7 @@ import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityDamageByBlockEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
@@ -26,6 +28,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.CachedServerIcon;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,18 +43,18 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
     public static String noPermission, JoinErrorMessage;
     public static int shulkerDupe;
     public static int fzDupeTime;
-    public static String ErrorConsoleMessage;
+    public static String ErrorConsoleMessage, elytraFlyMessage;
     public static String fzSuccessFulMessage;
     public static int fzDupeMaxTime;
     public static String fzErrorMessage;
     public static int AChunkMaxRedStone;
     public static int AChunkMaxPiston, coldDown;
     public static String outPistonMessage, nothingToReply, statPlayerNotFoundMessage;
-    public static boolean enableQuitJoinMessage, hasAuthme = false;
+    public static boolean enableQuitJoinMessage, hasAuthme = false, spawnTNT;
     public static boolean enablemotd;
     public static boolean disablePing;
     public static List<String> motds;
-    public static int onlinePlayer;
+    public static int onlinePlayer, minSuperChickenSeconds, maxSuperChickenSeconds, maxChickenAChunk;
     public static int maxPlayer;
     public static boolean hidePlayer;
     public static int protocolVersion, maxDamage, MaxQueuePlayer, minQueueSeconds, maxQueueSeconds;
@@ -65,6 +68,8 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
     //              Receiver  Sender
     public static Map<String, String> whispers = new HashMap<>();
     public static Map<Player, Integer> shulkerdupes = new HashMap<>();
+    public static File chickenData, items;
+    public static ArrayList<ChickenData> chickenDatas = new ArrayList<>();
 
     @Override
     public void onEnable() {
@@ -79,6 +84,7 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
             this.getServer().createWorld(new WorldCreator(QueueMap));
         }
         new WorldSize().register();
+        new NewOrNotChunk().register();
         for(World world : getServer().getWorlds()) {
             if(world.getGameRuleValue("announceAdvancements").equals("true")) {
                 world.setGameRuleValue("announceAdvancements", "false");
@@ -92,19 +98,89 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
         }
         if(this.getServer().getPluginManager().getPlugin("Authme") != null) {
             this.getServer().getPluginManager().registerEvents(new AuthmeListener(), this);
-        } else {
             hasAuthme = true;
+        } else {
+            hasAuthme = false;
         }
+        try {
+            chickenData = new File(this.getDataFolder().getCanonicalPath() + "/chickensUUID");
+            items = new File(this.getDataFolder().getCanonicalPath() + "/chickenItems");
+            YamlConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(items);
+            if(!chickenData.exists()) {
+                chickenData.createNewFile();
+            } else {
+                for (String v : FileUtil.getFileAllContent(chickenData)) {
+                    ChickenData c = new ChickenData((Chicken) Bukkit.getEntity(UUID.fromString(v)), v, yamlConfiguration.getItemStack(v));
+                    c.randomTime = RandomUtils.random(minSuperChickenSeconds, maxSuperChickenSeconds);
+                    c.time = 0;
+                    chickenDatas.add(c);
+                }
+            }
+        } catch (Exception exception) {
+            //
+        }
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                try {
+                    for (ChickenData v : chickenDatas) {
+                        if (v.chicken != null && v.uuid != null && v.shulker != null) {
+                            if (v.time >= v.randomTime * 20) {
+                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "superchicken " + v.chicken.getUniqueId().toString());
+                                v.randomTime = RandomUtils.random(minSuperChickenSeconds, maxSuperChickenSeconds);
+                                v.time = 0;
+                            } else {
+                                Bukkit.getEntity(UUID.fromString(v.uuid)).setCustomNameVisible(true);
+                                Bukkit.getEntity(UUID.fromString(v.uuid)).setCustomName(v.shulker.getItemMeta().getDisplayName());
+                                v.time++;
+                            }
+                        }
+                    }
+                } catch (Exception exception) {
+                    //
+                }
+                cleanChicken();
+            }
+        }.runTaskTimerAsynchronously(this, 1L, 1L);
     }
 
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        if(this.getServer().getWorld(QueueMap) != null) {
-            this.getServer().unloadWorld(QueueMap, false);
+        try {
+            if(this.getServer().getWorld(QueueMap) != null) {
+                this.getServer().unloadWorld(QueueMap, false);
+            }
+            ArrayList<Entity> wroteEntitys = new ArrayList<>();
+            shulkerdupes.clear();
+            chatColdDown.clear();
+            chickenData = new File(this.getDataFolder().getCanonicalPath() + "/chickensUUID");
+            items = new File(this.getDataFolder().getCanonicalPath() + "/chickenItems");
+            items.deleteOnExit();
+            items.createNewFile();
+            chickenData.deleteOnExit();
+            chickenData.createNewFile();
+            YamlConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(items);
+            FileWriter fileWriter = new FileWriter(chickenData);
+            for(ChickenData v : chickenDatas) {
+                if(Bukkit.getEntity(UUID.fromString(v.uuid)) != null) {
+                    if (yamlConfiguration.getItemStack(v.uuid) != null) {
+                        yamlConfiguration.set(v.uuid, v.shulker);
+                    } else {
+                        yamlConfiguration.createSection(v.uuid);
+                        yamlConfiguration.addDefault(v.uuid, v.shulker);
+                    }
+                    if(!wroteEntitys.contains(Bukkit.getEntity(UUID.fromString(v.uuid)))) {
+                        fileWriter.write(v.uuid + "\n");
+                        wroteEntitys.add(Bukkit.getEntity(UUID.fromString(v.uuid)));
+                    }
+                }
+            }
+            fileWriter.close();
+            yamlConfiguration.save(items);
+        } catch (Exception exception) {
+            //
         }
-        shulkerdupes.clear();
-        chatColdDown.clear();
     }
 
     @Override
@@ -262,6 +338,21 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
                     sender.sendMessage(ChatColor.translateAlternateColorCodes(prefix.charAt(0), StringUtils.format(StringUtils.translatePlaceholderAPI(v, null))));
                 }
             }
+        } else if(command.getName().equals("superchicken")) {
+            try {
+                if(Bukkit.getEntity(UUID.fromString(args[0])) != null) {
+                    Chicken chicken = (Chicken) Bukkit.getEntity(UUID.fromString(args[0]));
+                    for (ChickenData v : chickenDatas) {
+                        if(v.randomTime * 20 <= v.time) {
+                            if (v.chicken.getUniqueId().toString().equals(chicken.getUniqueId().toString())) {
+                                chicken.getWorld().dropItem(chicken.getLocation(), v.shulker);
+                            }
+                        }
+                    }
+                }
+            } catch (Exception exception) {
+                //
+            }
         }
         return super.onCommand(sender, command, label, args);
     }
@@ -293,9 +384,81 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
     }
 
     @EventHandler
+    public void elyFly(PlayerMoveEvent event) {
+        if(!event.getPlayer().isOnGround()) {
+            if(event.getPlayer().getInventory().getChestplate() != null) {
+                if (event.getPlayer().getInventory().getChestplate().getType().equals(Material.ELYTRA)) {
+                    event.getPlayer().sendActionBar(StringUtils.translatePlaceholderAPI(StringUtils.format(elytraFlyMessage), event.getPlayer()));
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void superChicken1(PlayerInteractAtEntityEvent event) {
+        if(event.getPlayer() != null && event.getRightClicked() != null) {
+            if(event.getRightClicked().getType().equals(EntityType.CHICKEN) && event.getPlayer().hasPermission("2b2tcore.superchicken")) {
+                if(Materials.shulkers.contains(event.getPlayer().getInventory().getItemInMainHand().getType())) {
+                    ChickenData v = new ChickenData(((Chicken) event.getRightClicked()), event.getRightClicked().getUniqueId(), event.getPlayer().getInventory().getItemInMainHand());
+                    v.randomTime = new Random().nextInt(maxSuperChickenSeconds - minSuperChickenSeconds + 1) + minSuperChickenSeconds;
+                    v.time = 0;
+                    chickenDatas.add(v);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void superChicken2(EntityDeathEvent event) {
+        try {
+            if (event.getEntityType().equals(EntityType.CHICKEN)) {
+                chickenDatas.forEach(v -> {
+                    if (event.getEntity().getUniqueId().toString().equals(v.uuid)) {
+                        chickenDatas.remove(v);
+                    }
+                });
+            }
+        } catch (Exception exception) {
+            //
+        }
+    }
+
+    @EventHandler
+    public void superChicken3(EntitySpawnEvent event) {
+        if(EntityUtils.getEntityCount(event.getEntity().getChunk(), EntityType.CHICKEN) > maxChickenAChunk) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void superChicken4(PlayerEggThrowEvent event) {
+        if(EntityUtils.getEntityCount(event.getEgg().getChunk(), EntityType.CHICKEN) > maxChickenAChunk) {
+            if(spawnTNT) {
+                event.setHatchingType(EntityType.PRIMED_TNT);
+                event.setHatching(true);
+            } else {
+                event.setHatching(false);
+            }
+        }
+    }
+
+
+    @EventHandler
     public void returnTab(AsyncTabCompleteEvent event) {
-        if(event.getSender() instanceof Player) {
-            if(StringUtils.getCharAmount(event.getBuffer(), ' ') == 0) event.setCompletions(tabReturnMessage);
+        if(event.getSender() instanceof Player && !event.getSender().hasPermission("2b2tcore.admin")) {
+            if(StringUtils.getCharAmount(event.getBuffer(), ' ') == 0) {
+                ArrayList<String> AtabReturnMessage = new ArrayList<>();
+                for(String v : tabReturnMessage) {
+                    if(Objects.equals(event.getBuffer(), "/")) {
+                        AtabReturnMessage.add(v);
+                    } else {
+                        if(v.startsWith(event.getBuffer())) {
+                            AtabReturnMessage.add(v);
+                        }
+                    }
+                }
+                event.setCompletions(AtabReturnMessage);
+            }
         }
     }
 
@@ -500,7 +663,7 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
                         }
                     }
                 }.runTaskTimerAsynchronously(this, 1L, 1L);
-                if (this.getServer().getWorlds().stream().filter(v -> !v.getName().equals(QueueMap)).collect(Collectors.toList()).size() > 0) {
+                if (this.getServer().getWorlds().stream().filter(v -> v.getName().equals(QueueMap)).collect(Collectors.toList()).size() > 0) {
                     Location location = event.getPlayer().getLocation();
                     location.setWorld(this.getServer().getWorld(QueueMap));
                     event.getPlayer().teleport(location);
@@ -685,12 +848,13 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
         statMessage = yamlConfig.getStringList("stat");
         statsPlayer = yamlConfig.getStringList("statsPlayer");
         statsConsole = yamlConfig.getStringList("statsConsole");
+        minSuperChickenSeconds = yamlConfig.getInt("minSuperChickenSeconds");
+        maxSuperChickenSeconds = yamlConfig.getInt("maxSuperChickenSeconds");
+        maxChickenAChunk = yamlConfig.getInt("maxChickenAChunk");
+        spawnTNT = yamlConfig.getBoolean("spawnTNT");
+        elytraFlyMessage = ChatColor.translateAlternateColorCodes(prefix.charAt(0), yamlConfig.getString("elytraFlyMessage"));
         shulkerdupes.clear();
         chatColdDown.clear();
-    }
-
-    private boolean canJoin(Player player) {
-        return canJoin(player.getName());
     }
 
     private boolean canJoin(String player) {
@@ -702,5 +866,19 @@ public final class A2b2tCore extends JavaPlugin implements CommandExecutor, List
             }
         }
         return false;
+    }
+
+    private void cleanChicken() {
+        try {
+            ArrayList<ChickenData> removes = new ArrayList<>();
+            for (ChickenData v : chickenDatas) {
+                if (Bukkit.getEntity(UUID.fromString(v.uuid)) == null) {
+                    removes.add(v);
+                }
+            }
+            removes.forEach(v -> chickenDatas.remove(v));
+        } catch (Exception exception) {
+            //
+        }
     }
 }

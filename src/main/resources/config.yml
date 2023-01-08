@@ -69,7 +69,12 @@ MaxQueuePlayer: 200
 #  in seconds
 minQueueSeconds: 20
 maxQueueSeconds: 60
+minSuperChickenSeconds: 40
+maxSuperChickenSeconds: 80
+maxChickenAChunk: 16
+spawnTNT: false
 TeleLogin: false
+elytraFlyMessage: "You are fly in %newOrNotChunk% chunk."
 PositionInQueue: "&6Position in queue: %Position%"
 JoinErrorMessage: "&cSorry, you need in %QueueMap% world"
 # once max damage

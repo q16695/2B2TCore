@@ -45,6 +45,9 @@ commands:
     description: join
   stats:
     description: stat the server
+  superchicken:
+    description: spawn a shulker
+    permission: 2b2tcore.admin
 permissions:
   2b2tcore.admin:
     description: admin
@@ -52,3 +55,5 @@ permissions:
     description: shulkderdupe use of permission
   2b2tcore.skipQueue:
     description: skipQueue Permissions
+  2b2tcore.superchicken:
+    description: you can use it dupe shulker
